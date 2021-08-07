@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+	background-color: #272727;
+    color: #E7E7E7;
+}
+button {
+    width: 200px;
+    height: 50px;  
+    border: 2px solid black;    
+    background-color: #581566;    
+    color: #5DD743;
+    font:  sans-serif;
+    font-size: 18px;
+}
+
+button:hover {
+	box-shadow: 2px 2px 5px rgba(0,0,0,.5);
+}
+
+button.small {
+	width: 90px;
+    height: 30px;
+    border: 2px solid black;
+    background-color: #581566;    
+    color: #5DD743;
+    font:  sans-serif;
+    font-size: 18px;
+}
+
+div.divider {
+	width: 1fr;
+    height: 3px;
+    background-color: #000000;
+}
+
+input:hover {
+	box-shadow: 2px 2px 5px rgba(0,0,0,.5);
+}
+
+input.small {
+	width: 1fr;
+    height: 30px;
+    border: 1px solid black;
+}
+
+h1 {
+    font: sans-serif;
+    font-size: 48px;  
+    color: #E7E7E7;
+}
+
+h2 {
+	background-color: #272727;
+    font: sans-serif;
+    font-size: 18px;
+    color: #E7E7E7;
+}
+
+p {	
+    font: sans-serif;
+    font-size: 18px;
+    color: #E7E7E7;
+}
+
+p.scroll {
+    width: 600px;
+    height: 150px;    
+    font: sans-serif;
+    font-size: 18px;
+    color: #E7E7E7;
+    overflow-y: auto;
+}
+
+#snackbar {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    background-color: #181818;
+    color: #E7E7E7;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations to fade the snackbar in and out */
+@-webkit-keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
+</style>
+</head>
+
+
+<body>
+<h1>Random List Picker</h1>
+<div class="divider"></div>
+<div>
+    <p>Each button click will pick a random item from the current list.</p>
+    <button type=button onclick="randomButton()">Randomize me!</button>
+    <button type=button onclick="removeRandom()">Remove this option?</button>
+    <div style="min-height:1.25em; height: 2em;">    	
+    	<p id="random-pick"></p>
+    </div>
+</div>
+
+<div>    
+    <button type=button onclick="showAllOptions()">Show Current List</button>    
+    <button type=button onclick="sortList()">Sort Current List</button>
+    
+    <p id="listView" class="scroll"></p>
+    <button type=button onclick="resetList()">Reset List</button>
+    <button type=button onclick="clearAllOptions()">Delete Current List</button>
+</div>
+
+<div class="divider"></div>
+
+<div>
+    <h2 class="editHeader">Edit Current List</h2>
+    <input class="small" type="text" id="newInput" placeholder="Enter an option to add.">
+    <button type=button class="small" onclick="addOptions()">Add</button>
+    <br />
+    <br />
+    <input class="small" type="text" id="removeInput" placeholder="Enter an option to remove.">
+    <button type=button class="small" onclick="removeOptions()">Remove</button>
+</div>
+
+<div id="snackbar"></div>
+
+<script type="text/javascript" async="async">
+// Default option list to use if reset is used.
+let defaultList = [
+    'ring', 'bait', 'freeze', 'enchanted', 'dragon', 'ash', 'wild', 'treasure', 'ghost', 'ancient', 'fish', 'wisp', 'rodent', 'teeth', 'ominous', 'armor', 'storm', 'sword', 'ship', 'filthy', 'fat', 'shattered', 'crooked'];
+
+
+// Add item.
+function addOptions() {
+    let newValue = document.getElementById('newInput').value;
+    
+    if (newValue) {
+        if (localStorage.getItem("optionsList") === null) {
+        	let fullList = [];
+            fullList.push(newValue);
+        	localStorage.setItem("optionsList"), JSON.stringify(fullList);            
+        } else {
+            let retrievedData = localStorage.getItem("optionsList");
+            let fullList = JSON.parse(retrievedData);
+            let flength = fullList.length;
+            fullList[flength] = newValue;            
+            localStorage.setItem("optionsList", JSON.stringify(fullList));        
+            document.getElementById("listView").innerHTML = '';
+        }
+        
+        document.getElementById("newInput").value = '';
+        let msg = ("Added \'" + newValue + "\' to the list.");
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+    	let msg = "Listen here you little heck..";
+    	document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    }
+}
+
+
+// Clear full list.
+function clearAllOptions() {
+    if (localStorage.getItem("optionsList") === null) {
+        let msg = "You do not have a list right now!";
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+        let retrievedData = localStorage.getItem("optionsList");
+        let fullList = JSON.parse(retrievedData);
+        // Loop this?
+        let msg = ("Okay, deleted all of these values: " + fullList);
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+        localStorage.clear();
+        document.getElementById("listView").innerHTML = '';
+    }
+}
+
+
+// Returns a random number between 0 and the length of the array.
+function getRandomInt(max) {
+    let random = Math.floor(Math.random() * max);
+    if (random > max) {
+        random = random - 1;
+    }
+    
+    return random;
+}
+
+
+// Grabs a random thing.
+function randomButton() {
+    if (localStorage.getItem("optionsList") === null) {
+        let msg = "You do not have a list right now!";
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+      let retrievedData = localStorage.getItem("optionsList");
+      let fullList = JSON.parse(retrievedData);
+      let flength = fullList.length;      
+
+      document.getElementById("random-pick").innerHTML = fullList[getRandomInt(flength)];
+	}
+}
+
+
+// Remove item.
+function removeOptions() {
+    if (localStorage.getItem("optionsList") === null) {
+        let msg = "You do not have a list right now!";
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+		let removeValue = document.getElementById('removeInput').value;
+    
+        if (removeValue) {
+            let retrievedData = localStorage.getItem("optionsList");
+            let fullList = JSON.parse(retrievedData);
+            let found = false;
+
+            // Find the value to remove.
+            for (var i = fullList.length - 1; i >= 0; i--) {
+                if (fullList[i] == removeValue) {
+                    fullList.splice(i, 1);
+                    found = true;
+                }
+            }
+
+            if (found) {
+                // Store new array.
+                localStorage.setItem("optionsList", JSON.stringify(fullList));
+                let msg = ("Removed the \'" + removeValue + "\' entry.");
+                document.getElementById('snackbar').innerHTML = msg;
+                sendToast();
+                document.getElementById("removeInput").value = '';
+                document.getElementById("listView").innerHTML = '';            
+            } else {
+            	let msg = ("Unable to find \'" + removeValue + "\' entry.");
+                document.getElementById('snackbar').innerHTML = msg;
+                sendToast();
+            }
+    	}
+    }
+}
+
+
+// Remove the option picked by the random.
+function removeRandom() {
+	if (localStorage.getItem("optionsList") === null) {
+        let msg = "You do not have a list right now!";
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+		let randomToRemove = document.getElementById("random-pick").innerHTML;
+        let retrievedData = localStorage.getItem("optionsList");
+        let fullList = JSON.parse(retrievedData);
+        let found = false;
+
+        // Find the value to remove.
+        for (var i = fullList.length - 1; i >= 0; i--) {
+        	if (fullList[i] == randomToRemove) {
+            	fullList.splice(i, 1);
+                found = true;
+            }
+		}
+
+        if (found) {
+			// Store new array.
+            localStorage.setItem("optionsList", JSON.stringify(fullList));
+            let msg = ("Removed the \'" + randomToRemove + "\' entry.");
+            document.getElementById('snackbar').innerHTML = msg;
+            sendToast();                          
+		} else {
+          	let msg = ("Encountered an error trying to remove the \'" + randomToRemove + "\' entry.");
+            document.getElementById('snackbar').innerHTML = msg;
+            sendToast();
+		}
+	}
+}
+
+
+// Reset list back to default.
+function resetList() {
+    if (localStorage.getItem("optionsList") === null) {
+        localStorage.setItem("optionsList", JSON.stringify(defaultList));
+    } else {
+    	localStorage.clear();
+        localStorage.setItem("optionsList", JSON.stringify(defaultList));
+    }
+    let msg = "Okay, the list has been reset back to the default list.";
+    document.getElementById('snackbar').innerHTML = msg;
+    sendToast();
+}
+
+
+// Send an alert to the toast box.
+function sendToast() {	
+	let toastElement = document.getElementById("snackbar");    
+	toastElement.className = "show";    
+    
+    setTimeout(function() {
+    	toastElement.className = toastElement.className.replace("show", "");
+        }, 3000);	
+}
+
+
+// Lists all entries.
+function showAllOptions() {
+    if (localStorage.getItem("optionsList") === null) {
+    	let msg = "You do not have a list right now!";
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+      let retrievedData = localStorage.getItem("optionsList");
+      let fullList = JSON.parse(retrievedData);
+      let currentList = '';
+      fullList.forEach(element => currentList += element += ", ");
+      currentList = currentList.replace(/,\s*$/, "");
+      currentList = currentList += ".";
+      document.getElementById("listView").innerHTML = currentList;
+   }
+}
+
+
+// Sorts the current list.
+function sortList() {
+    if (localStorage.getItem("optionsList") === null) {
+    	let msg = "You do not have a list right now!";
+        document.getElementById('snackbar').innerHTML = msg;
+        sendToast();
+    } else {
+      let retrievedData = localStorage.getItem("optionsList");
+      let fullList = JSON.parse(retrievedData);
+      fullList.sort();
+      localStorage.setItem("optionsList", JSON.stringify(fullList));
+   }
+}
+</script>
+
+</body>
+</html>
