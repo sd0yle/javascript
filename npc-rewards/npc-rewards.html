@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="npc-rewards.js"></script>
+    <title>NPC Mystery Sacks</title>
+</head>
+
+<body>
+<h1>NPC Mystery Sacks</h1>
+<div class="divider"></div>
+<div style="min-height:.25em;"></div>
+<div>
+    <button class="pop" type=button onclick="randomButton()">Open Mystery Sack!</button>
+    <div style="min-height:1.25em; height: 2em;">
+        <p id="randomPick"></p>
+    </div>
+    <div>
+        <h2 class="smallHeader">Reward Results:</h2>
+        <p id="pickHistory" style="overflow-y: auto"></p>
+        <div id="pickHistoryArea"></div>
+    </div>
+</div>
+
+<div class="divider"></div>
+
+<div>
+    <h2 class="smallHeader">Reset:</h2>
+    <button type=button onclick="resetList()">Clear Results</button>
+</div>
+
+<div id="snackbar"></div>
+
+</body>
+</html>
