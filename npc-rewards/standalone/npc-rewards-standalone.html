@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NPC Mystery Sacks</title>
+        <style>
+            :root {
+                --chron-black: #171212;
+                --chron-dm-purple: #4c3e4c;
+                --chron-dm-grey: #272727;
+                --chron-grey: #454445;
+                --chron-gold: #b19658;
+                --chron-purple: #8c4fa6;
+                --chron-white: #dbe5e5;
+            }
+            body {
+                background-color: var(--chron-dm-grey);
+                color: var(--chron-white);
+                font-family: Verdana, Geneva, sans-serif;
+            }
+
+            button {
+                width: 200px;
+                height: 50px;
+                border: 2px solid var(--chron-black);
+                background-color: var(--chron-grey);
+                color: var(--chron-white);
+                font-family: Verdana, Geneva, sans-serif;
+                font-size: 16px;
+            }
+
+            button:hover {
+                background-color: var(--chron-gold);
+                box-shadow: 2px 2px 5px var(--chron-black);
+                color: var(--chron-black);
+            }
+
+            button.pop {
+                background-color: var(--chron-purple);
+                color: var(--chron-white);
+                margin: auto;
+            }
+
+            #pickHistoryArea {
+                display:grid;
+                padding-bottom: 1em;
+            }
+
+            #pickHistoryCleanUpButton {
+                background-color: var(--chron-grey);
+                margin: auto;
+            }
+
+            #pickHistoryCleanUpButton:hover {
+                background-color: var(--chron-gold);
+                box-shadow: 2px 2px 5px var(--chron-black);
+                color: var(--chron-black);
+            }
+
+            div.divider {
+                width: 1fr;
+                height: 3px;
+                background-color: var(--chron-black);
+            }
+
+            h1 {
+                font-size: 28px;
+                text-align: center;
+            }
+
+            h2.smallHeader {
+                font-size: 18px;
+            }
+
+            p {
+                font-size: 18px;
+            }
+
+            p.scroll {
+                font-size: 18px;
+                height: 150px;
+                overflow-y: auto;
+                width: 600px;
+                word-wrap: normal;
+            }
+
+            #resetButtonArea {
+                padding-top: 1em;
+                display:grid;
+            }
+
+            #resetButtonArea button {
+                margin: auto;
+            }
+
+            #resetButtonArea button:hover {
+                background-color: var(--chron-gold);
+                box-shadow: 2px 2px 5px var(--chron-black);
+                color: var(--chron-black);
+            }
+
+            #rollButtonArea {
+                display: grid;
+            }
+
+            #rollButton:hover {
+                background-color: var(--chron-gold);
+                box-shadow: 2px 2px 5px var(--chron-black);
+                color: var(--chron-black);
+            }
+
+            #snackbar {
+                visibility: hidden;
+                min-width: 250px;
+                margin-left: -125px;
+                background-color: var(--chron-black);
+                color: var(--chron-gold);
+                text-align: center;
+                border-radius: 2px;
+                padding: 16px;
+                position: fixed;
+                z-index: 1;
+                left: 50%;
+                bottom: 30px;
+            }
+
+            #snackbar.show {
+                visibility: visible;
+                -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+                animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            }
+
+            textarea.scroll {
+                width: 600px;
+                height: 150px;
+                font-size: 18px;
+                color: var(--chron-black);
+                word-wrap: break-word;
+                overflow-y: auto;
+            }
+
+            /* Animations to fade the snackbar in and out */
+            @-webkit-keyframes fadein {
+                from {bottom: 0; opacity: 0;}
+                to {bottom: 30px; opacity: 1;}
+            }
+
+            @keyframes fadein {
+                from {bottom: 0; opacity: 0;}
+                to {bottom: 30px; opacity: 1;}
+            }
+
+            @-webkit-keyframes fadeout {
+                from {bottom: 30px; opacity: 1;}
+                to {bottom: 0; opacity: 0;}
+            }
+
+            @keyframes fadeout {
+                from {bottom: 30px; opacity: 1;}
+                to {bottom: 0; opacity: 0;}
+            }
+        </style>
+    </head>
+    <body>
+        <h1>NPC Mystery Sacks</h1>
+        <div class="divider"></div>
+        <div style="min-height:.25em;"></div>
+        <div id="main">
+            <div id="rollButtonArea">
+                <button class="pop" type=button onclick="randomButton()" id="rollButton">Open Mystery Sack!</button>
+            </div>
+            <div id="rollDisplayArea">
+                <span id="rollCount"></span>
+                <span id="randomPick"></span>
+            </div>
+            <div>
+                <h2 class="smallHeader" hidden=hidden id="resultsLabel">Reward Results:</h2>
+                <p id="pickHistory" style="overflow-y: auto"></p>
+                <div id="pickHistoryArea"></div>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <div id="resetButtonArea">
+            <button type=button onclick="resetList()">Clear Results</button>
+        </div>
+        <div id="snackbar"></div>
+        <script type="text/javascript" async="async">
+             /*
+             Variables
+             */
+
+            // Component List.
+            let componentList = [
+                "Foraging","Logging","Mining","Scrapping"]
+
+            // Main Reward List.
+            let rewardList = [
+                "One Gold Coin", "Rank 5 Component", "Bundle of five Rank 1 Components", "Bundle of seven Rank 1 Components"]
+
+            /*
+             Functions.
+             */
+
+            // Clean up local storage on refresh.
+            window.onbeforeunload = function () {
+                localStorage.removeItem("npcRewardList");
+                localStorage.removeItem("rollCount");
+            }
+
+
+            // Consolidate the roll history into list with number of repeats for each roll.
+            function cleanUpRolls() {
+                // Grab the roll history.
+                let rollHistoryString = document.getElementById("pickHistory").innerHTML;
+
+                // Convert to array and remove surrounding white space.
+                let rollHistoryArray = rollHistoryString.split(",").map(function (value) {
+                    return value.trim();
+                });
+
+                // Sort the array and count duplicates.
+                rollHistoryArray.sort();
+                rollHistoryArray = rollHistoryArray.reduce(function(prev, cur) {
+                    prev[cur] = (prev[cur] || 0) + 1;
+                    return prev
+                }, {});
+
+                // Update UI elements.
+                document.getElementById("randomPick").innerHTML = '';
+                document.getElementById("resultsLabel").hidden = true;
+                document.getElementById("rollButton").hidden = true;
+                document.getElementById("pickHistoryCleanUpButton").hidden = true;
+
+                // Update UI with result.
+                document.getElementById("pickHistory").innerHTML = Object.keys(rollHistoryArray).map(key => `${key}: ${rollHistoryArray[key]}`).join('<br>');
+            }
+
+
+            // Generate random components.
+            function getRandomComponent() {
+                let randomComponents = '';
+                let listLength = componentList.length;
+                let stringValue = document.getElementById("randomPick").innerHTML;
+                // Return a single Rank 5.
+                if (stringValue.match(/^(Rank 5 Component)$/)) {
+                    randomComponents = "Rank 5 " + componentList[getRandomInt(listLength)] + " Component";
+                }
+                // Bundles.
+                let bundleQuantity = 0;
+                if (stringValue.match(/^(Bundle of five Rank 1 Components)$/)) {
+                    bundleQuantity = 5;
+                }
+                // Return seven random Rank 1s.
+                if (stringValue.match(/^(Bundle of seven Rank 1 Components)$/)) {
+                    bundleQuantity = 7;
+                }
+                if (bundleQuantity !== 0) {
+                    for (let i = 0; i < bundleQuantity; i++) {
+                        if (randomComponents === '') {
+                            randomComponents = "Rank 1 " + componentList[getRandomInt(listLength)] + " Component";
+                        } else {
+                            let nextRandomComponent = "Rank 1 " + componentList[getRandomInt(listLength)] + " Component";
+                            randomComponents = randomComponents + ", " + nextRandomComponent;
+                        }
+                    }
+                }
+
+                return randomComponents;
+            }
+
+            // Returns a random number between 0 and the length of the array.
+            function getRandomInt(max) {
+                let random = Math.floor(Math.random() * max);
+                if (random > max) {
+                    random = random - 1;
+                }
+
+                return random;
+            }
+
+
+            // Resets the local storage in case something else has used it.
+            function initLocalStorage(option){
+                if (localStorage.getItem("npcRewardList") === null) {
+                    localStorage.setItem("npcRewardList", JSON.stringify(rewardList));
+                } else {
+                    localStorage.removeItem("npcRewardList");
+                    localStorage.setItem("npcRewardList", JSON.stringify(rewardList));
+                }
+                if (localStorage.getItem("rollCount") === null) {
+                    localStorage.setItem("rollCount", "0");
+                } else {
+                    if (option === 'reset') {
+                        localStorage.removeItem("rollCount");
+                        localStorage.setItem("rollCount", "0");
+                    }
+                }
+            }
+
+
+            // Pulls reward options, selects a random one, and displays it.
+            function randomButton() {
+                // Ensure local storage is initialized.
+                initLocalStorage();
+                let retrievedRewardList = JSON.parse(localStorage.getItem("npcRewardList"));
+                let listLength = retrievedRewardList.length;
+                // Update roll count.
+                rollCountUpdate();
+                document.getElementById("resultsLabel").hidden = false;
+                // Display random selection, add to history.
+                document.getElementById("randomPick").innerHTML = retrievedRewardList[getRandomInt(listLength)];
+                let history = document.getElementById("pickHistory").innerHTML;
+                let newHistory = document.getElementById("randomPick").innerHTML;
+                // Handle additional randoms.
+                if (newHistory.match(/^.*(Component).*$/)) {
+                    newHistory = getRandomComponent();
+                }
+                // Update history list.
+                if (history !== '') {
+                    newHistory = history + ", " + newHistory;
+                }
+                document.getElementById("pickHistory").innerHTML = newHistory;
+
+                // Add Clean Up button.
+                if (document.getElementById("pickHistoryCleanUpButton") === null) {
+                    let button = document.createElement("button");
+                    button.setAttribute("type", "button");
+                    button.setAttribute("id", "pickHistoryCleanUpButton");
+                    button.setAttribute("onclick", "cleanUpRolls()");
+
+                    let div = document.getElementById("pickHistoryArea");
+                    div.appendChild(button);
+                    document.getElementById("pickHistoryCleanUpButton").innerHTML = "Clean Up Results";
+                }
+            }
+
+
+            // Reset the app.
+            function resetList() {
+                initLocalStorage("reset");
+                if (document.getElementById("pickHistoryCleanUpButton") !== null) {
+                    document.getElementById("pickHistoryArea").removeChild(document.getElementById("pickHistoryCleanUpButton"));
+                }
+                document.getElementById("randomPick").innerHTML = '';
+                document.getElementById("pickHistory").innerHTML = '';
+                document.getElementById("rollButton").hidden = false;
+                document.getElementById("rollCount").innerHTML = '';
+                document.getElementById("resultsLabel").hidden = true;
+                document.getElementById("snackbar").innerHTML = "Reset complete.";
+                sendToast();
+            }
+
+            // Update the count for rolls.
+            function rollCountUpdate() {
+                let retrievedRollCount = JSON.parse(localStorage.getItem("rollCount"));
+                let newCount = parseInt(retrievedRollCount, 10);
+                newCount = (newCount + 1);
+                localStorage.setItem("rollCount", JSON.stringify(newCount));
+                document.getElementById("rollCount").innerHTML = "[Rolls: " + newCount + "] "
+            }
+
+            // Send an alert to the toast box.
+            function sendToast() {
+                let toastElement = document.getElementById("snackbar");
+                toastElement.className = "show";
+
+                setTimeout(function() {
+                    toastElement.className = toastElement.className.replace("show", "");
+                }, 3000);
+            }
+        </script>
+    </body>
+</html>

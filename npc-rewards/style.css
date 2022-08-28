@@ -1,89 +1,114 @@
+:root {
+    --chron-black: #171212;
+    --chron-dm-purple: #4c3e4c;
+    --chron-dm-grey: #272727;
+    --chron-grey: #454445;
+    --chron-gold: #b19658;
+    --chron-purple: #8c4fa6;
+    --chron-white: #dbe5e5;
+}
 body {
-    background-color: #272727;
-    color: #E7E7E7;
+    background-color: var(--chron-dm-grey);
+    color: var(--chron-white);
     font-family: Verdana, Geneva, sans-serif;
 }
 
 button {
     width: 200px;
     height: 50px;
-    border: 2px solid black;
-    background-color: #7f7f7f;
-    color: white;
+    border: 2px solid var(--chron-black);
+    background-color: var(--chron-grey);
+    color: var(--chron-white);
     font-family: Verdana, Geneva, sans-serif;
     font-size: 16px;
 }
 
 button:hover {
-    box-shadow: 2px 2px 5px rgba(0,0,0,.5);
+    background-color: var(--chron-gold);
+    box-shadow: 2px 2px 5px var(--chron-black);
+    color: var(--chron-black);
 }
 
 button.pop {
-    background-color: #800080;
-    color: white;
+    background-color: var(--chron-purple);
+    color: var(--chron-white);
+    margin: auto;
 }
 
-button.small {
-    width: 90px;
-    height: 30px;
-    border: 2px solid black;
-    background-color: #7f7f7f;
-    color: white;
-    font-family: Verdana, Geneva, sans-serif;
-    font-size: 14px;
+#pickHistoryArea {
+    display:grid;
+    padding-bottom: 1em;
+}
+
+#pickHistoryCleanUpButton {
+    background-color: var(--chron-grey);
+    margin: auto;
+}
+
+#pickHistoryCleanUpButton:hover {
+    background-color: var(--chron-gold);
+    box-shadow: 2px 2px 5px var(--chron-black);
+    color: var(--chron-black);
 }
 
 div.divider {
     width: 1fr;
     height: 3px;
-    background-color: #000000;
-}
-
-input:hover {
-    box-shadow: 2px 2px 5px rgba(0,0,0,.5);
-}
-
-input.small {
-    width: 1fr;
-    height: 30px;
-    border: 1px solid black;
+    background-color: var(--chron-black);
 }
 
 h1 {
-    font-family: Verdana, Geneva, sans-serif;
     font-size: 28px;
-    color: #E7E7E7;
+    text-align: center;
 }
 
 h2.smallHeader {
-    background-color: #272727;
-    font-family: Verdana, Geneva, sans-serif;
     font-size: 18px;
-    color: #E7E7E7;
 }
 
 p {
-    font-family: Verdana, Geneva, sans-serif;
     font-size: 18px;
-    color: #E7E7E7;
 }
 
 p.scroll {
-    width: 600px;
-    height: 150px;
-    font-family: Verdana, Geneva, sans-serif;
     font-size: 18px;
-    color: #E7E7E7;
-    word-wrap: normal;
+    height: 150px;
     overflow-y: auto;
+    width: 600px;
+    word-wrap: normal;
+}
+
+#resetButtonArea {
+    padding-top: 1em;
+    display:grid;
+}
+
+#resetButtonArea button {
+    margin: auto;
+}
+
+#resetButtonArea button:hover {
+    background-color: var(--chron-gold);
+    box-shadow: 2px 2px 5px var(--chron-black);
+    color: var(--chron-black);
+}
+
+#rollButtonArea {
+    display: grid;
+}
+
+#rollButton:hover {
+    background-color: var(--chron-gold);
+    box-shadow: 2px 2px 5px var(--chron-black);
+    color: var(--chron-black);
 }
 
 #snackbar {
     visibility: hidden;
     min-width: 250px;
     margin-left: -125px;
-    background-color: #181818;
-    color: #E7E7E7;
+    background-color: var(--chron-black);
+    color: var(--chron-gold);
     text-align: center;
     border-radius: 2px;
     padding: 16px;
@@ -102,9 +127,8 @@ p.scroll {
 textarea.scroll {
     width: 600px;
     height: 150px;
-    font-family: Verdana, Geneva, sans-serif;
     font-size: 18px;
-    color: black;
+    color: var(--chron-black);
     word-wrap: break-word;
     overflow-y: auto;
 }
